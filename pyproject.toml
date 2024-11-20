@@ -16,4 +16,5 @@ distribution = false
 
 [tool.pdm.scripts]
 start = "python src/main.py"
-training = "python src/training.py"
+train = "python src/trainer.py"
+evaluate = "python src/evaluator.py"
