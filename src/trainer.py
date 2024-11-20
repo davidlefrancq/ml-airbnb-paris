@@ -15,7 +15,7 @@ import joblib
 class Trainer():
   """Machine Learning trainer for Airbnb price prediction."""
 
-  def __init__(self, data_path_file="data/data-ligth.csv"):
+  def __init__(self, data_path_file):
     self.data_path_file = data_path_file
     self.models = {
         'random_forest': {
@@ -73,21 +73,54 @@ class Trainer():
   def clean_data(self):
     try:
       self.data.info()
-      # colonne conservé: neighbourhood, latitude, longitude, room_type, price, minimum_nights
-      colomns_used = ['neighbourhood', 'latitude', 'longitude', 'room_type', 'price', 'minimum_nights']
+      # Colonnes conservées
+      colomns_used = [
+        # 'host_response_rate',
+        # 'host_acceptance_rate',
+        # 'host_listings_count',
+        'latitude',
+        'longitude',
+        # 'city',
+        'zipcode',
+        # 'state',
+        'accommodates',
+        'room_type',
+        # 'bedrooms',
+        # 'bathrooms',
+        'beds',
+        'price',
+        # 'cleaning_fee',
+        # 'security_deposit',
+        'minimum_nights',
+        # 'maximum_nights',
+        # 'number_of_reviews',
+      ]
       
       # retirer les colonnes non utilisées
       self.data = self.data[colomns_used]
         
       # retirer les lignes avec le price manquant
       self.data = self.data.dropna(subset=['price'])
-      
+          
       # supprimer tous les caractère non numérique à l'exception du "."
       if not np.issubdtype(self.data['price'].dtype, np.number):
         self.data['price'] = self.data['price'].str.replace(r'[^\d.]', '', regex=True).astype(float)
+      if not np.issubdtype(self.data['zipcode'].dtype, np.number):
+        self.data['zipcode'] = self.data['zipcode'].str.replace(r'[^\d]', '', regex=True).astype(float)
+
+      self.data.info()
 
       # Identifier et supprimer les valeurs aberrantes
-      for column in ['price', 'minimum_nights']:
+      for column in [
+        'latitude',
+        'longitude',
+        'zipcode',
+        'accommodates',
+        # 'bathrooms',
+        'beds',
+        'price',
+        'minimum_nights'
+      ]:
         Q1 = self.data[column].quantile(0.25)
         Q3 = self.data[column].quantile(0.75)
         IQR = Q3 - Q1
@@ -107,7 +140,7 @@ class Trainer():
 
     try:
       # Encoder les variables catégorielles
-      categorical_columns = ['neighbourhood', 'room_type']
+      categorical_columns = ['room_type']
       for column in categorical_columns:
         self.encoders[column] = LabelEncoder()
         self.data[column] = self.encoders[column].fit_transform(self.data[column])
@@ -115,7 +148,17 @@ class Trainer():
       self.data.info()
       
       # Standardiser les variables numériques
-      numerical_columns = ['price', 'latitude', 'longitude', 'minimum_nights']
+      numerical_columns = [
+        'latitude',
+        'longitude',
+        'zipcode',
+        'accommodates',
+        # 'bathrooms',
+        'beds',
+        'price',
+        'minimum_nights',
+      ]
+
       for column in numerical_columns:
         self.scalers[column] = StandardScaler()
         self.data[column] = self.scalers[column].fit_transform(self.data[[column]])
@@ -144,6 +187,7 @@ class Trainer():
         'minimum_nights_distribution': lambda: sns.histplot(data=self.data, x="minimum_nights", kde=True),
         'price_by_room_type': lambda: sns.boxplot(data=self.data, x="room_type", y="price"),
         'price_by_location': lambda: sns.scatterplot(data=self.data, x="longitude", y="latitude", hue="price"),
+        'price_by_zipcode': lambda: sns.boxplot(data=self.data, x="zipcode", y="price"),
         'correlation_matrix': lambda: sns.heatmap(self.data.corr(), annot=True, cmap="YlOrRd")
       }
       
@@ -165,7 +209,27 @@ class Trainer():
   def split_data(self):
     """Split data into training and testing sets."""
     try:
-      features = ['neighbourhood', 'latitude', 'longitude', 'room_type', 'minimum_nights']
+      features = [
+        # 'host_response_rate',
+        # 'host_acceptance_rate',
+        # 'host_listings_count',
+        'latitude',
+        'longitude',
+        # 'city',
+        'zipcode',
+        # 'state',
+        'accommodates',
+        'room_type',
+        # 'bedrooms',
+        # 'bathrooms',
+        'beds',
+        # 'price',
+        # 'cleaning_fee',
+        # 'security_deposit',
+        'minimum_nights',
+        # 'maximum_nights',
+        # 'number_of_reviews',
+      ]
       X = self.data[features]
       y = self.data['price']
       
@@ -266,5 +330,5 @@ class Trainer():
   
 # Run training
 if __name__ == '__main__':
-  trainer = Trainer()
+  trainer = Trainer(data_path_file='data/paris_airbnb.csv')
   trainer.start()
