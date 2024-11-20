@@ -5,7 +5,7 @@ description = "Default template for PDM package"
 authors = [
     {name = "David Lefrancq", email = "david.lefrancq@gmail.com"},
 ]
-dependencies = []
+dependencies = ["matplotlib>=3.9.2", "seaborn>=0.13.2", "joblib>=1.4.2", "scikit-learn>=1.5.2"]
 requires-python = "==3.11.*"
 readme = "README.md"
 license = {text = "MIT"}
@@ -13,3 +13,7 @@ license = {text = "MIT"}
 
 [tool.pdm]
 distribution = false
+
+[tool.pdm.scripts]
+start = "python src/main.py"
+training = "python src/training.py"
