@@ -21,6 +21,7 @@ pdm run evaluate
 
 ## Best model
 
+### T0 (initial version)
 Best parameters for random_forest:
 - {'max_depth': 10, 'min_samples_split': 50, 'n_estimators': 300}
 - Best score: 0.634
@@ -49,3 +50,33 @@ Results:
 - linear_regression
   - RMSE: 0.78
   - R2 Score: 0.37
+
+### T1 (first optimization)
+Best parameters for random_forest:
+- {'max_depth': 10, 'min_samples_split': 50, 'n_estimators': 200}
+- Best score: 0.677
+
+Best parameters for gradient_boosting:
+- {'learning_rate': 0.05, 'max_depth': 3, 'n_estimators': 200}
+- Best score: 0.674
+
+Best parameters for svr:
+- {'C': 1, 'epsilon': 0.5, 'gamma': 0.1, 'kernel': 'rbf'}
+- Best score: 0.683
+
+Results:
+- random_forest
+  - RMSE: 0.80
+  - R2 Score: 0.34
+
+- gradient_boosting
+  - RMSE: 0.80
+  - R2 Score: 0.34
+
+- svr
+  - RMSE: 0.80
+  - R2 Score: 0.34
+
+  linear_regression
+  - RMSE: 0.87
+  - R2 Score: 0.21

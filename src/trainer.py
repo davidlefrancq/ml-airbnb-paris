@@ -17,6 +17,8 @@ class Trainer():
   """Machine Learning trainer for Airbnb price prediction."""
 
   def __init__(self, data_path_file):
+    self.data = None
+    self.original_data = None
     self.data_path_file = data_path_file
     self.models = {
         'random_forest': {
@@ -107,13 +109,13 @@ class Trainer():
         # 'maximum_nights',
         # 'number_of_reviews',
       ]
-      
+
       # retirer les colonnes non utilisées
       self.data = self.data[colomns_used]
-        
+
       # retirer les lignes avec le price manquant
       self.data = self.data.dropna(subset=['price'])
-          
+
       # supprimer tous les caractère non numérique à l'exception du "."
       if not np.issubdtype(self.data['price'].dtype, np.number):
         self.data['price'] = self.data['price'].str.replace(r'[^\d.]', '', regex=True).astype(float)
@@ -137,13 +139,16 @@ class Trainer():
         Q3 = self.data[column].quantile(0.75)
         IQR = Q3 - Q1
         self.data = self.data[
-          (self.data[column] >= Q1 - 1.5 * IQR) & 
+          (self.data[column] >= Q1 - 1.5 * IQR) &
           (self.data[column] <= Q3 + 1.5 * IQR)
         ]
-        
+
       # Réinitialiser l'index
       self.data = self.data.reset_index(drop=True)
-      
+
+      # Copie dans original data
+      self.original_data = self.data.copy()
+
       self.logger.info(f"Data cleaned successfully: {self.data.shape}")
       self.data.info()
     except Exception as e:
@@ -155,14 +160,17 @@ class Trainer():
     """Normalize numerical features and encode categorical features."""
 
     try:
+      # Sauvegarder les codes postaux originaux
+      self.original_zipcodes = self.data['zipcode'].copy()
+
       # Encoder les variables catégorielles
       categorical_columns = ['room_type']
       for column in categorical_columns:
         self.encoders[column] = LabelEncoder()
         self.data[column] = self.encoders[column].fit_transform(self.data[column])
-          
+
       self.data.info()
-      
+
       # Standardiser les variables numériques
       numerical_columns = [
         'latitude',
@@ -178,7 +186,7 @@ class Trainer():
       for column in numerical_columns:
         self.scalers[column] = StandardScaler()
         self.data[column] = self.scalers[column].fit_transform(self.data[[column]])
-      
+
       self.logger.info("Data normalization completed")
 
       # Save encoders and scalers
@@ -198,25 +206,40 @@ class Trainer():
   def visualize_data(self):
     """Generate and save data visualizations."""
     try:
+      numeric_columns = self.original_data.select_dtypes(include=[np.number]).columns
+      categorical_columns = self.original_data.select_dtypes(exclude=[np.number]).columns
+
       plots = {
-        'price_distribution': lambda: sns.histplot(data=self.data, x="price", kde=True),
-        'minimum_nights_distribution': lambda: sns.histplot(data=self.data, x="minimum_nights", kde=True),
-        'price_by_room_type': lambda: sns.boxplot(data=self.data, x="room_type", y="price"),
-        'price_by_location': lambda: sns.scatterplot(data=self.data, x="longitude", y="latitude", hue="price"),
-        'price_by_zipcode': lambda: sns.boxplot(data=self.data, x="zipcode", y="price"),
-        'correlation_matrix': lambda: sns.heatmap(self.data.corr(), annot=True, cmap="YlOrRd")
+        'correlation_matrix': lambda: sns.heatmap(self.original_data[numeric_columns].corr(), annot=True, cmap="YlOrRd", fmt=".2f"),
+        'price_distribution': lambda: sns.histplot(data=self.original_data, x="price", kde=True),
+        'price_by_location': lambda: sns.scatterplot(data=self.original_data, x="longitude", y="latitude", hue="price"),
+        'price_by_room_type': lambda: sns.boxplot(data=self.original_data, x="room_type", y="price"),
+        'price_vs_accommodates': lambda: sns.scatterplot(data=self.original_data, x="accommodates", y="price"),
+        'price_vs_minimum_nights': lambda: sns.scatterplot(data=self.original_data, x="minimum_nights", y="price")
       }
-      
+
+      # plots = {
+      #   'price_distribution': lambda: sns.histplot(data=self.original_data, x="price", kde=True),
+      #   'minimum_nights_distribution': lambda: sns.histplot(data=self.original_data, x="minimum_nights", kde=True),
+      #   'price_by_room_type': lambda: sns.boxplot(data=self.original_data, x="room_type", y="price"),
+      #   'price_by_location': lambda: sns.scatterplot(data=self.original_data, x="longitude", y="latitude", hue="price"),
+      #   'price_by_zipcode': lambda: sns.boxplot(data=self.original_data, x="zipcode", y="price"),
+      #   'correlation_matrix': lambda: sns.heatmap(self.original_data.corr(), annot=True, cmap="YlOrRd")
+      # }
+
       for name, plot_func in plots.items():
-        plt.figure(figsize=(10, 6))
+        plt.figure(figsize=(15, 8))
         plot_func()
         plt.title(name.replace('_', ' ').title())
+        if name == 'price_by_zipcode':
+          plt.xticks(rotation=90)
         plt.tight_layout()
-        plt.savefig(os.path.join('plots', f'{name}.png'))
+        # plt.savefig(os.path.join('plots', f'{name}.png'))
+        plt.savefig(os.path.join('plots', f'{name}.png'), dpi=300, bbox_inches='tight')
         plt.close()
-          
+
       self.logger.info("Data visualizations saved")
-        
+
     except Exception as e:
       self.logger.error(f"Error: generating visualizations has failed.")
       raise e
@@ -232,9 +255,9 @@ class Trainer():
         'latitude',
         'longitude',
         # 'city',
-        'zipcode',
+        # 'zipcode',
         # 'state',
-        'accommodates',
+        # 'accommodates',
         'room_type',
         # 'bedrooms',
         # 'bathrooms',
@@ -248,13 +271,13 @@ class Trainer():
       ]
       X = self.data[features]
       y = self.data['price']
-      
+
       self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
         X, y, test_size=0.2, random_state=42
       )
-      
+
       self.logger.info(f"Data split - Training: {self.X_train.shape}, Testing: {self.X_test.shape}")
-      
+
     except Exception as e:
       self.logger.error(f"Error: splitting data has failed.")
       raise e
@@ -280,9 +303,9 @@ class Trainer():
         else:
           config['model'].fit(self.X_train, self.y_train)
           self.models[name]['best_model'] = config['model']
-              
+
       self.logger.info("Models trained successfully")
-        
+
     except Exception as e:
       self.logger.error(f"Error training models: {str(e)}")
       raise
@@ -296,34 +319,34 @@ class Trainer():
         y_pred = model.predict(self.X_test)
         rmse = np.sqrt(mean_squared_error(self.y_test, y_pred))
         r2 = r2_score(self.y_test, y_pred)
-        
+
         self.logger.info(f"\n{name} Results:")
         self.logger.info(f"RMSE: {rmse:.2f}")
         self.logger.info(f"R2 Score: {r2:.2f}")
-        
+
         if r2 > self.best_score:
           self.best_score = r2
           self.best_model = model
           self.best_model_name = name
-                
+
     except Exception as e:
       self.logger.error(f"Error: evaluating models has failed.")
       raise e
 
   # Save models
-  def save_models(self, model_path_folder="models/"):
+  def save_models(self, model_path_folder="models"):
     """Save trained models."""
     try:
       for name, config in self.models.items():
-        model_path = os.path.join('models', f'{name}.pkl')
+        model_path = os.path.join('{model_path_folder}', f'{name}.pkl')
         joblib.dump(config['best_model'], model_path)
-        
-      self.logger.info(f"Models saved in /models")
-      
+
+      self.logger.info(f"Models saved in folder: {model_path_folder}")
+
     except Exception as e:
       self.logger.error(f"Error: saving models has failed.")
       raise e
-  
+
   def start(self):
       """Run the complete training pipeline."""
       pipeline_steps = [
@@ -336,14 +359,14 @@ class Trainer():
         self.evaluate_models,
         self.save_models
       ]
-      
+
       for step in pipeline_steps:
         try:
           step()
         except Exception as e:
           self.logger.error(f"Error: pipeline failed at {step.__name__}.")
           raise e
-  
+
 # Run training
 if __name__ == '__main__':
   trainer = Trainer(data_path_file='data/paris_airbnb.csv')
