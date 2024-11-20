@@ -1,5 +1,21 @@
 # Airbnb ML Project
 
+## Commands
+Start client models:
+```bash
+pdm run start
+```
+
+Launch training models:
+```bash
+pdm run train
+```
+
+Evaluate models:
+```bash
+pdm run evaluate
+```
+
 ## Data source
 - https://insideairbnb.com/get-the-data/
 
