@@ -41,9 +41,30 @@ class Trainner():
     
     # retirer les colonnes non utilisées
     self.data = self.data[colomns_used]
-      
+    
     # retirer les lignes avec le price manquant
     self.data = self.data.dropna(subset=['price'])
+
+    # Identifier les valeurs aberrantes pour le prix
+    price_q1 = self.data['price'].quantile(0.25)
+    price_q3 = self.data['price'].quantile(0.75)
+    price_iqr = price_q3 - price_q1
+    price_lower_bound = price_q1 - 1.5 * price_iqr
+    price_upper_bound = price_q3 + 1.5 * price_iqr
+    
+     # Supprimer les valeurs aberrantes pour le prix
+    self.data = self.data[(self.data['price'] >= price_lower_bound) & (self.data['price'] <= price_upper_bound)]
+    
+    # Identifier les valeurs aberrantes pour le nombre de nuits minimum
+    min_nights_q1 = self.data['minimum_nights'].quantile(0.25)
+    min_nights_q3 = self.data['minimum_nights'].quantile(0.75)
+    min_nights_iqr = min_nights_q3 - min_nights_q1
+    min_nights_lower_bound = min_nights_q1 - 1.5 * min_nights_iqr
+    min_nights_upper_bound = min_nights_q3 + 1.5 * min_nights_iqr
+    
+    # Supprimer les valeurs aberrantes pour le nombre de nuits minimum
+    self.data = self.data[(self.data['minimum_nights'] >= min_nights_lower_bound) & (self.data['minimum_nights'] <= min_nights_upper_bound)]
+    
     self.data.info()
 
   # Normalize data
