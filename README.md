@@ -19,6 +19,14 @@ pdm run evaluate
 ## Data source
 - https://insideairbnb.com/get-the-data/
 
+## Visualization
+![Correlation Matrix](plots/correlation_matrix.png "Correlation Matrix")
+![Price by location](plots/price_by_location.png "Price by location")
+![Price by room type](plots/price_by_room_type.png "Price by room type")
+![Price distribution](plots/price_distribution.png "Price distribution")
+![Price vs accommodates](plots/price_vs_accommodates.png "Price vs accommodates")
+![Price vs minimum nights](plots/price_vs_minimum_nights.png "Price vs minimum nights")
+
 ## Best model
 
 ### T0 (initial version)
