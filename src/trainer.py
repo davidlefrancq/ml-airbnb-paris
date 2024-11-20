@@ -318,10 +318,12 @@ class Trainer():
         model = config['best_model']
         y_pred = model.predict(self.X_test)
         rmse = np.sqrt(mean_squared_error(self.y_test, y_pred))
+        mae = mean_absolute_error(self.y_test, y_pred),
         r2 = r2_score(self.y_test, y_pred)
 
         self.logger.info(f"\n{name} Results:")
         self.logger.info(f"RMSE: {rmse:.2f}")
+        self.logger.info(f"MAE: {mae:.2f}")
         self.logger.info(f"R2 Score: {r2:.2f}")
 
         if r2 > self.best_score:
