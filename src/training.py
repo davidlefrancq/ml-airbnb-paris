@@ -193,6 +193,9 @@ class Trainer():
           )
           grid_search.fit(self.X_train, self.y_train)
           self.models[name]['best_model'] = grid_search.best_estimator_
+          self.logger.info(f"\nBest parameters for {name}:")
+          self.logger.info(grid_search.best_params_)
+          self.logger.info(f"Best score: {-grid_search.best_score_:.3f}")
         else:
           config['model'].fit(self.X_train, self.y_train)
           self.models[name]['best_model'] = config['model']
