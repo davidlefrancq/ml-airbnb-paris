@@ -42,6 +42,7 @@ class Predictor:
       self.models = {
         'random_forest': joblib.load(os.path.join(self.models_dir, 'random_forest.pkl')),
         'gradient_boosting': joblib.load(os.path.join(self.models_dir, 'gradient_boosting.pkl')),
+        'svr': joblib.load(os.path.join(self.models_dir, 'svr.pkl')),
         'linear_regression': joblib.load(os.path.join(self.models_dir, 'linear_regression.pkl'))
       }
       

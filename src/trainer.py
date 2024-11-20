@@ -10,6 +10,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+from sklearn.svm import SVR
 import joblib
 
 class Trainer():
@@ -21,15 +22,26 @@ class Trainer():
         'random_forest': {
             'model': RandomForestRegressor(random_state=42),
             'params': {
-                'n_estimators': [100, 200],
-                'max_depth': [10, 20, None]
+            'n_estimators': [100, 200, 300],
+            'max_depth': [10, 20, 30, None],
+            'min_samples_split': [2, 5, 10, 20, 30, 40, 50],
             }
         },
         'gradient_boosting': {
             'model': GradientBoostingRegressor(random_state=42),
             'params': {
-                'n_estimators': [100, 200],
-                'learning_rate': [0.01, 0.1]
+              'n_estimators': [100, 200, 300],
+              'learning_rate': [0.01, 0.05, 0.1],
+              'max_depth': [3, 5, 7]
+            }
+        },
+        'svr': {
+            'model': SVR(),
+            'params': {
+                'kernel': ['rbf', 'poly'],
+                'C': [0.1, 1, 10, 100],
+                'gamma': ['scale', 'auto', 0.1, 1],
+                'epsilon': [0.01, 0.1, 0.5]
             }
         },
         'linear_regression': {
@@ -128,6 +140,10 @@ class Trainer():
           (self.data[column] >= Q1 - 1.5 * IQR) & 
           (self.data[column] <= Q3 + 1.5 * IQR)
         ]
+        
+      # Réinitialiser l'index
+      self.data = self.data.reset_index(drop=True)
+      
       self.logger.info(f"Data cleaned successfully: {self.data.shape}")
       self.data.info()
     except Exception as e:
