@@ -48,11 +48,63 @@ class Trainner():
 
   # Normalize data
   def normalize_data(self):
-    pass
+    # Encoder les variables catégorielles
+    label_encoder = LabelEncoder()
+    self.data['neighbourhood'] = label_encoder.fit_transform(self.data['neighbourhood'])
+    self.data['room_type'] = label_encoder.fit_transform(self.data['room_type'])
+    self.data.info()
+    
+    # Standardiser les variables numériques
+    scaler = StandardScaler()
+    self.data[['price', 'minimum_nights']] = scaler.fit_transform(self.data[['price', 'minimum_nights']])
+
+    # Vérifier les statistiques descriptives des variables normalisées
+    print("\nStatistiques descriptives après normalisation:")
+    print(self.data.describe())
 
   # Visualize data
   def visualize_data(self):
-    pass
+    # Visualiser la distribution des prix
+    plt.figure(figsize=(8, 6))
+    sns.histplot(data=self.data, x="price", kde=True)
+    plt.title("Distribution des prix")
+    plt.savefig("plots/price_distribution.png")
+    plt.close()
+
+    # Visualiser la distribution du nombre de nuits minimum
+    plt.figure(figsize=(8, 6))
+    sns.histplot(data=self.data, x="minimum_nights", kde=True)
+    plt.title("Distribution du nombre de nuits minimum")
+    plt.savefig("plots/minimum_nights_distribution.png")
+    plt.close()
+    
+    # Visualiser la relation entre le prix et le type de logement
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(data=self.data, x="room_type", y="price")
+    plt.title("Prix moyen par type de logement")
+    plt.xlabel("Type de logement")
+    plt.ylabel("Prix")
+    plt.savefig("plots/price_by_room_type.png")
+    plt.close()
+
+    # Visualiser la relation entre le prix et la localisation (quartier)
+    plt.figure(figsize=(12, 8))
+    sns.scatterplot(data=self.data, x="longitude", y="latitude", hue="price")
+    plt.title("Localisation des annonces et prix")
+    plt.xlabel("Longitude")
+    plt.ylabel("Latitude")
+    plt.savefig("plots/price_by_location.png")
+    plt.close()
+    
+    # Calculer la matrice de corrélation
+    corr_matrix = self.data.corr()
+
+    # Visualiser la matrice de corrélation
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(corr_matrix, annot=True, cmap="YlOrRd")
+    plt.title("Matrice de corrélation")
+    plt.savefig("plots/correlation_matrix.png")
+    plt.close()
 
   # Split data
   def split_data(self):
