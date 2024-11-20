@@ -83,7 +83,8 @@ class Trainer():
       self.data = self.data.dropna(subset=['price'])
       
       # supprimer tous les caractère non numérique à l'exception du "."
-      self.data['price'] = self.data['price'].str.replace(r'[^\d.]', '', regex=True).astype(float)
+      if not np.issubdtype(self.data['price'].dtype, np.number):
+        self.data['price'] = self.data['price'].str.replace(r'[^\d.]', '', regex=True).astype(float)
 
       # Identifier et supprimer les valeurs aberrantes
       for column in ['price', 'minimum_nights']:
@@ -265,5 +266,5 @@ class Trainer():
   
 # Run training
 if __name__ == '__main__':
-  trainer = Trainer(data_path_file="data/data.csv")
+  trainer = Trainer()
   trainer.start()
