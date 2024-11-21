@@ -1,6 +1,11 @@
 # Airbnb ML Project
 
 ## Commands
+Requirement: https://pdm-project.org/en/latest/#installation
+```bash
+pdm install
+```
+
 Start client models:
 ```bash
 pdm run start
