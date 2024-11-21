@@ -65,4 +65,4 @@ if __name__ == '__main__':
       predictions = predictor.predict(sample_data)
       print("Prix prédits:")
       for model_name, price in predictions.items():
-        print(f"{model_name}: {price}€")
+        print(f"  - {model_name}: {price}€")
