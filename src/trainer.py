@@ -11,6 +11,7 @@ from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
 from sklearn.svm import SVR
+from sklearn.cluster import MeanShift
 import joblib
 
 class Trainer():
@@ -160,9 +161,6 @@ class Trainer():
     """Normalize numerical features and encode categorical features."""
 
     try:
-      # Sauvegarder les codes postaux originaux
-      self.original_zipcodes = self.data['zipcode'].copy()
-
       # Encoder les variables catégorielles
       categorical_columns = ['room_type']
       for column in categorical_columns:
